@@ -11,16 +11,24 @@ class FCLayer(nn.Module):
   def forward(self, x):
     return self.W * x + self.b
 
+class Softie(nn.Module):
+  def __init__(self, input_size):
+    self.input_size = input_size
+  
+  def forward(self, x):
+    pass
+
 # create a RNN. this is not the final class
 class RNN(nn.Module):
     def __init__(self, input_size, output_size):
         super(RNN, self).__init__()
 
-        self.hidden_size = 10 # can be arbitrary
+        hidden_size = 10 # can be arbitrary
+        self.hidden_size = hidden_size
 
-        self.i2h = nn.FCLayer(input_size + hidden_size, hidden_size)
-        self.i2o = nn.FCLayer(input_size + hidden_size, output_size)
-        self.softmax = nn.LogSoftmax() # honky, sue me
+        self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
+        self.i2o = nn.Linear(input_size + hidden_size, output_size)
+        self.softmax = nn.LogSoftmax() 
 
     def forward(self, input, hidden):
         combined = torch.cat((input, hidden), 1) # concatenate
@@ -34,24 +42,25 @@ class RNNLM(nn.Module):
   def __init__(self, vocab_size):
     super(RNNLM, self).__init__()
      
-    self.embedding_size = 10 # arbitrary dimension
-    self.vocab_size = vocab_size
-
-    self.embedding = torch.randn(vocab_size, self.embedding_size)  # random word embedding
-    self.rnn = RNN(self.embedding_size, self.vocab_size)
+    embedding_size = 10 # arbitrary dimension
+    self.hidden_size = 10
+    self.embedding = torch.randn(vocab_size, embedding_size)  # random word embedding
+    self.rnn = RNN(embedding_size, vocab_size)
 
 
 
   def forward(self, input_batch):
     ## input_batch of size (seq_len, batch_size)
-    ## apply for loop
+    seq_len, batch_size = input_batch.size()
+    predictions = torch.zeros(input_batch.size())
+    
     hidden = Variable(torch.zeros(1, self.hidden_size))
-    for t in xrange(seq_len -1):
-      w = self.embedding[...] # need to work out batches and embedding
-      output, hidden = rnn(w, hidden)
-      # store output somewhere
+    for t in xrange(seq_len):
+      word_ix = input_batch[t, :]
+      w = self.embedding[word_ix.data, :]
+      output, hidden = self.rnn(w, hidden)
+      _, predictions[t,:] = output.data.topk(1) # get the index of the top item
 
-    # process outputs so they turn into actual words (or indexes to be more precise)
 
     return predictions
 
