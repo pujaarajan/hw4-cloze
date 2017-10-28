@@ -21,21 +21,22 @@ class Softie(nn.Module):
 # create a RNN. this is not the final class
 class RNN(nn.Module):
     def __init__(self, input_size, output_size):
-        super(RNN, self).__init__()
+      super(RNN, self).__init__()
 
-        hidden_size = 10 # can be arbitrary
-        self.hidden_size = hidden_size
+      hidden_size = 10 # can be arbitrary
+      self.hidden_size = hidden_size
 
-        self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
-        self.i2o = nn.Linear(input_size + hidden_size, output_size)
-        self.softmax = nn.LogSoftmax() 
+      self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
+      self.i2o = nn.Linear(input_size + hidden_size, output_size)
+      self.softmax = nn.LogSoftmax() 
 
     def forward(self, input, hidden):
-        combined = torch.cat((input, hidden), 1) # concatenate
-        hidden = self.i2h(combined)
-        output = self.i2o(combined)
-        output = self.softmax(output)
-        return output, hidden
+      #print type(input), type(hidden), type(input.data), type(hidden.data)
+      combined = Variable(torch.cat((input.data, hidden.data), 1), requires_grad=True) # concatenate
+      hidden = self.i2h(combined)
+      output = self.i2o(combined)
+      output = self.softmax(output)
+      return output, hidden
 
 # this is the final class that will use RNN
 class RNNLM(nn.Module):
@@ -44,6 +45,7 @@ class RNNLM(nn.Module):
      
     embedding_size = 10 # arbitrary dimension
     self.hidden_size = 10
+    self.vocab_size = vocab_size
     self.embedding = torch.randn(vocab_size, embedding_size)  # random word embedding
     self.rnn = RNN(embedding_size, vocab_size)
 
@@ -52,15 +54,14 @@ class RNNLM(nn.Module):
   def forward(self, input_batch):
     ## input_batch of size (seq_len, batch_size)
     seq_len, batch_size = input_batch.size()
-    predictions = torch.zeros(input_batch.size())
+    predictions = Variable(torch.zeros(seq_len, batch_size, self.vocab_size))
     
-    hidden = Variable(torch.zeros(1, self.hidden_size))
+    hidden = Variable(torch.randn(batch_size, self.hidden_size), requires_grad=True)
     for t in xrange(seq_len):
       word_ix = input_batch[t, :]
-      w = self.embedding[word_ix.data, :]
-      output, hidden = self.rnn(w, hidden)
-      _, predictions[t,:] = output.data.topk(1) # get the index of the top item
-
+      w = Variable(self.embedding[word_ix.data, :], requires_grad=True)
+      output, hidden = self.rnn(w, hidden) #
+      predictions[t,:,:] = output
 
     return predictions
 
