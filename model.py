@@ -11,12 +11,11 @@ class DenseLayer(nn.Module):
   def forward(self, x):
     return self.W * x + self.b
 
-class Softie(nn.Module):
-  def __init__(self, input_size):
-    self.input_size = input_size
-  
+class ourTanh(nn.Module):
   def forward(self, x):
-    pass
+    return torch.tanh(x)
+  def __repr__(self):
+    return self.__class__.__name__ + '()'
 
 # create a RNN. this is not the final class
 class RNN(nn.Module):
@@ -28,12 +27,13 @@ class RNN(nn.Module):
 
       self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
       self.i2o = nn.Linear(input_size + hidden_size, output_size)
-      self.softmax = nn.LogSoftmax() 
+      self.tanh = ourTanh() 
+      self.softmax = nn.LogSoftMax()
 
     def forward(self, input, hidden):
       #print type(input), type(hidden), type(input.data), type(hidden.data)
       combined = Variable(torch.cat((input.data, hidden.data), 1), requires_grad=True) # concatenate
-      hidden = self.i2h(combined)
+      hidden = self.tanh(self.i2h(combined))
       output = self.i2o(combined)
       output = self.softmax(output)
       return output, hidden
