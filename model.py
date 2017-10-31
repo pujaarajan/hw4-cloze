@@ -56,11 +56,12 @@ class RNNLM(nn.Module):
     seq_len, batch_size = input_batch.size()
     predictions = Variable(torch.zeros(seq_len, batch_size, self.vocab_size))
 
-    hidden = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
+    hLR = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)]
     for t in xrange(seq_len):
       word_ix = input_batch[t, :]
       w = Variable(self.embedding[word_ix.data, :], requires_grad=True)
-      output, hidden = self.rnn(w, hidden) #
+      output, hidden = self.rnn(w, hLR[t]) #
+      hLR.append(hidden)
       predictions[t,:,:] = output
 
     return predictions
