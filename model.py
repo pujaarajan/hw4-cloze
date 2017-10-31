@@ -3,9 +3,9 @@ import torch.nn as nn
 from torch.autograd import Variable
 
 # since we cannot use Linear we create our own class
-class FCLayer(nn.Module):
+class DenseLayer(nn.Module):
   def __init__(self, input_size, output_size):
-    super(FCLayer, self).__init__()
+    super(DenseLayer, self).__init__()
     self.W = nn.Parameter(torch.rand(input_size, output_size))
     self.b = nn.Parameter(torch.rand(output_size))
   def forward(self, x):
@@ -56,7 +56,7 @@ class RNNLM(nn.Module):
     seq_len, batch_size = input_batch.size()
     predictions = Variable(torch.zeros(seq_len, batch_size, self.vocab_size))
     
-    hidden = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
+    hidden = Variable(torch.zeros(batch_size, self.hidden_size), requires_grad=True)
     for t in xrange(seq_len):
       word_ix = input_batch[t, :]
       w = Variable(self.embedding[word_ix.data, :], requires_grad=True)
