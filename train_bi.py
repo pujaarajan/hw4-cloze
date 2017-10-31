@@ -8,8 +8,7 @@ import logging
 import torch
 from torch import cuda
 from torch.autograd import Variable
-from example_module import BiRNNLM
-# from model import BiRNNLM
+from model import BiRNNLM
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)s: %(message)s',
