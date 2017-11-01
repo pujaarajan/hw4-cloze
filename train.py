@@ -69,7 +69,7 @@ def main(options):
 
   vocab_size = len(vocab)
 
-  rnnlm = RNNLM(vocab_size, options.batch_size)
+  rnnlm = RNNLM(vocab_size)
   if use_cuda > 0:
     rnnlm.cuda()
   else:

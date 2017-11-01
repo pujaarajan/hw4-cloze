@@ -3,29 +3,6 @@ import torch.nn as nn
 from torch.autograd import Variable
 import math
 
-# since we cannot use Linear we create our own class
-class LinearLayer(nn.Module):
-
-    def __init__(self, input_size, output_size):
-        super(LinearLayer, self).__init__()
-        self.input_size = input_size
-        self.output_size = output_size
-        self.W = nn.Parameter(torch.Tensor(output_size, input_size))
-        self.b = nn.Parameter(torch.Tensor(output_size))
-        self.init_params()
-
-    def init_params(self):
-        # stdv = 0.25
-        stdv = 1.0 / math.sqrt(self.output_size)
-        self.W.data.uniform_(-stdv, stdv)
-        self.b.data.uniform_(-stdv, stdv)
-
-        # self.W.data.uniform_(0, 1)
-        # self.b.data.uniform_(0, 1)
-
-    def forward(self, x):
-        return x.matmul(self.W.t()) + self.b
-
 import torch.nn.functional as functional
 class OurSoftmax(nn.Module):
   def __init__(self):
@@ -38,10 +15,6 @@ class OurSoftmax(nn.Module):
     # x = torch.log(x)
 
     return functional.log_softmax(x)
-
-
-
-
 
 # create a RNN. this is not the final class
 class RNN(nn.Module):
@@ -95,7 +68,7 @@ class RNNLM(nn.Module):
         hidden = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
         for t in xrange(seq_len):
             word_ix = input_batch[t, :]
-            w = Variable(self.embedding[word_ix.data, :], requires_grad=True)
+            w = self.embedding[word_ix.data, :]
             output, hidden = self.rnn(w, hidden)
             predictions[t,:,:] = output
         return predictions
