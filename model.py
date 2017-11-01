@@ -112,6 +112,7 @@ class UnitRNN(nn.Module):
     def forward(self, input, hidden):
         combined = Variable(torch.cat((input.data, hidden.data), 1), requires_grad=True) # concatenate
         hidden = self.i2h(combined)
+        hidden = torch.tanh(hidden)
         return hidden
 
 class BiRNNLM(nn.Module):
@@ -144,9 +145,9 @@ class BiRNNLM(nn.Module):
             hidden = self.rnnRL(w, hRL[seq_len - t - 1]) #
             hRL.append(hidden)
 
-        for i in range(len(hLR-2)):
+        for i in range(len(hLR)):
             j = len(hLR) - 1 - i
-            concatHidden = Variable(torch.cat((hLR[i].data, hRL[j+2].data), 1))
+            concatHidden = Variable(torch.cat((hLR[i].data, hRL[j].data), 1))
             output = self.softmax(self.h2o(concatHidden))
             predictions[i,:,:] = output
 
