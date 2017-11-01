@@ -1,15 +1,30 @@
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+import math
 
 # since we cannot use Linear we create our own class
-class FCLayer(nn.Module):
+class LinearLayer(nn.Module):
+
     def __init__(self, input_size, output_size):
-        super(FCLayer, self).__init__()
-        self.W = nn.Parameter(torch.rand(input_size, output_size))
-        self.b = nn.Parameter(torch.rand(output_size))
+        super(LinearLayer, self).__init__()
+        self.input_size = input_size
+        self.output_size = output_size
+        self.W = nn.Parameter(torch.Tensor(output_size, input_size))
+        self.b = nn.Parameter(torch.Tensor(output_size))
+        self.init_params()
+
+    def init_params(self):
+        # stdv = 0.25
+        stdv = 1.0 / math.sqrt(self.output_size)
+        self.W.data.uniform_(-stdv, stdv)
+        self.b.data.uniform_(-stdv, stdv)
+
+        # self.W.data.uniform_(0, 1)
+        # self.b.data.uniform_(0, 1)
+
     def forward(self, x):
-        return self.W * x + self.b
+        return x.matmul(self.W.t()) + self.b
 
 class Softie(nn.Module):
     def __init__(self, input_size):
@@ -26,8 +41,10 @@ class RNN(nn.Module):
         hidden_size = 16 # can be arbitrary
         self.hidden_size = hidden_size
 
-        self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
-        self.h2o = nn.Linear(hidden_size, output_size)
+        # self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
+        # self.h2o = nn.Linear(hidden_size, output_size)
+        self.i2h = LinearLayer(input_size + hidden_size, hidden_size)
+        self.h2o = LinearLayer(hidden_size, output_size)
         self.softmax = nn.LogSoftmax()
 
     def forward(self, input, hidden):
