@@ -26,12 +26,22 @@ class LinearLayer(nn.Module):
     def forward(self, x):
         return x.matmul(self.W.t()) + self.b
 
-class Softie(nn.Module):
-    def __init__(self, input_size):
-        self.input_size = input_size
+import torch.nn.functional as functional
+class ourSoftmax(nn.Module):
+  def __init__(self):
+    super(ourSoftmax, self).__init__()
 
-    def forward(self, x):
-        pass
+  def forward(self, x):
+    # x = torch.exp(x)
+    # Z = torch.sum(x, 0)
+    # x = torch.div(x, Z)
+    # x = torch.log(x)
+
+    return functional.log_softmax(x)
+
+
+
+
 
 # create a RNN. this is not the final class
 class RNN(nn.Module):
@@ -45,7 +55,7 @@ class RNN(nn.Module):
         # self.h2o = nn.Linear(hidden_size, output_size)
         self.i2h = LinearLayer(input_size + hidden_size, hidden_size)
         self.h2o = LinearLayer(hidden_size, output_size)
-        self.softmax = nn.LogSoftmax()
+        self.softmax = ourSoftmax()
 
     def forward(self, input, hidden):
         #print type(input), type(hidden), type(input.data), type(hidden.data)
