@@ -55,7 +55,7 @@ class RNNLM(nn.Module):
 
         self.hidden_size = 16
         self.vocab_size = vocab_size
-        self.embedding = nn.Parameter(torch.rand(vocab_size, embedding_size))  # random word embedding
+        self.embedding = nn.Parameter(torch.randn(vocab_size, embedding_size))  # random word embedding
         self.rnn = RNN(embedding_size, vocab_size)
 
         self.init_params()
@@ -65,7 +65,7 @@ class RNNLM(nn.Module):
         seq_len, batch_size = input_batch.size()
         predictions = Variable(torch.zeros(seq_len, batch_size, self.vocab_size), requires_grad=False)
 
-        hidden = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
+        hidden = Variable(torch.randn(batch_size, self.hidden_size), requires_grad=True)
         for t in xrange(seq_len):
             word_ix = input_batch[t, :]
             w = self.embedding[word_ix.data, :]
