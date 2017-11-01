@@ -82,8 +82,6 @@ class RNNLM(nn.Module):
 
 
 # TODO: Your implementation goes here
-
-
 class UnitRNN(nn.Module):
     def __init__(self, input_size, output_size):
         super(UnitRNN, self).__init__()
