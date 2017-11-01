@@ -48,23 +48,30 @@ class RNN(nn.Module):
     def __init__(self, input_size, output_size):
         super(RNN, self).__init__()
 
-        hidden_size = 16 # can be arbitrary
-        self.hidden_size = hidden_size
+        self.input_size = input_size
+        self.hidden_size = 16
+        self.output_size = output_size
 
-        # self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
-        # self.h2o = nn.Linear(hidden_size, output_size)
-        self.i2h = LinearLayer(input_size + hidden_size, hidden_size)
-        self.h2o = LinearLayer(hidden_size, output_size)
-        self.softmax = OurSoftmax()
+        self.W_ih = nn.Parameter(torch.Tensor(self.hidden_size, self.input_size + self.hidden_size))
+        self.b_ih = nn.Parameter(torch.Tensor(self.hidden_size))
+        self.W_ho = nn.Parameter(torch.Tensor(self.output_size, self.hidden_size))
+        self.b_ho = nn.Parameter(torch.Tensor(self.output_size))
+        self.softmax = torch.nn.LogSoftmax()
+
+        self.init_params()
 
     def forward(self, input, hidden):
-        #print type(input), type(hidden), type(input.data), type(hidden.data)
         combined = Variable(torch.cat((input.data, hidden.data), 1), requires_grad=True) # concatenate
-        hidden = self.i2h(combined)
+        hidden = combined.matmul(self.W_ih.t()) + self.b_ih
         hidden = torch.tanh(hidden)
-        output = self.h2o(hidden)
+        output = hidden.matmul(self.W_ho.t()) + self.b_ho
         output = self.softmax(output)
         return output, hidden
+
+    def init_params(self):
+        stdv = 1.0 / math.sqrt(self.hidden_size)
+        for weight in self.parameters():
+            weight.data.uniform_(-stdv, stdv)
 
 # this is the final class that will use RNN
 class RNNLM(nn.Module):
@@ -75,25 +82,28 @@ class RNNLM(nn.Module):
 
         self.hidden_size = 16
         self.vocab_size = vocab_size
-        self.embedding = torch.rand(vocab_size, embedding_size)  # random word embedding
+        self.embedding = nn.Parameter(torch.rand(vocab_size, embedding_size))  # random word embedding
         self.rnn = RNN(embedding_size, vocab_size)
+
+        self.init_params()
 
     def forward(self, input_batch):
         ## input_batch of size (seq_len, batch_size)
         seq_len, batch_size = input_batch.size()
-        predictions = Variable(torch.zeros(seq_len, batch_size, self.vocab_size))
+        predictions = Variable(torch.zeros(seq_len, batch_size, self.vocab_size), requires_grad=False)
 
-        hLR = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)]
-        #hidden = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
+        hidden = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
         for t in xrange(seq_len):
             word_ix = input_batch[t, :]
             w = Variable(self.embedding[word_ix.data, :], requires_grad=True)
-            output, hidden = self.rnn(w, hLR[t])
-            # output, hidden = self.rnn(w, hidden)
-            hLR.append(hidden)
+            output, hidden = self.rnn(w, hidden)
             predictions[t,:,:] = output
-
         return predictions
+
+    def init_params(self):
+        stdv = 1.0 / math.sqrt(self.hidden_size)
+        for weight in self.parameters():
+            weight.data.uniform_(-stdv, stdv)
 
 
 
