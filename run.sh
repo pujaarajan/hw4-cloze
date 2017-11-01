@@ -1,6 +1,7 @@
 #!/bin/bash -e
 #
 # Usage: ./run.sh <part#>
+# Example: ./run.sh 1
 #
 
 if [ $1 == 1 ] ; then
