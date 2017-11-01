@@ -27,9 +27,9 @@ class LinearLayer(nn.Module):
         return x.matmul(self.W.t()) + self.b
 
 import torch.nn.functional as functional
-class ourSoftmax(nn.Module):
+class OurSoftmax(nn.Module):
   def __init__(self):
-    super(ourSoftmax, self).__init__()
+    super(OurSoftmax, self).__init__()
 
   def forward(self, x):
     # x = torch.exp(x)
@@ -55,7 +55,7 @@ class RNN(nn.Module):
         # self.h2o = nn.Linear(hidden_size, output_size)
         self.i2h = LinearLayer(input_size + hidden_size, hidden_size)
         self.h2o = LinearLayer(hidden_size, output_size)
-        self.softmax = ourSoftmax()
+        self.softmax = OurSoftmax()
 
     def forward(self, input, hidden):
         #print type(input), type(hidden), type(input.data), type(hidden.data)
@@ -83,14 +83,14 @@ class RNNLM(nn.Module):
         seq_len, batch_size = input_batch.size()
         predictions = Variable(torch.zeros(seq_len, batch_size, self.vocab_size))
 
-        # hLR = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)]
-        hidden = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
+        hLR = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)]
+        #hidden = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
         for t in xrange(seq_len):
             word_ix = input_batch[t, :]
             w = Variable(self.embedding[word_ix.data, :], requires_grad=True)
-            # output, hidden = self.rnn(w, hLR[t])
-            output, hidden = self.rnn(w, hidden)
-            # hLR.append(hidden)
+            output, hidden = self.rnn(w, hLR[t])
+            # output, hidden = self.rnn(w, hidden)
+            hLR.append(hidden)
             predictions[t,:,:] = output
 
         return predictions
@@ -101,13 +101,13 @@ class RNNLM(nn.Module):
 # TODO: Your implementation goes here
 
 
-class NewRNN(nn.Module):
+class UnitRNN(nn.Module):
     def __init__(self, input_size, output_size):
-        super(NewRNN, self).__init__()
+        super(UnitRNN, self).__init__()
 
         hidden_size = 16 # can be arbitrary
         self.hidden_size = hidden_size
-        self.i2h = nn.Linear(input_size + hidden_size, hidden_size)
+        self.i2h = LinearLayer(input_size + hidden_size, hidden_size)
 
     def forward(self, input, hidden):
         combined = Variable(torch.cat((input.data, hidden.data), 1), requires_grad=True) # concatenate
@@ -121,10 +121,10 @@ class BiRNNLM(nn.Module):
         self.hidden_size = 16
         self.vocab_size = vocab_size
         self.embedding = torch.rand(self.vocab_size, self.embedding_size)  # random word embedding
-        self.lay = nn.Linear(self.hidden_size + self.hidden_size, self.vocab_size)
-        self.softmax = nn.LogSoftmax()
-        self.rnnLR = NewRNN(self.embedding_size, self.vocab_size)
-        self.rnnRL = NewRNN(self.embedding_size, self.vocab_size)
+        self.rnnLR = UnitRNN(self.embedding_size, self.vocab_size)
+        self.rnnRL = UnitRNN(self.embedding_size, self.vocab_size)
+        self.h2o = LinearLayer(self.hidden_size + self.hidden_size, self.vocab_size)
+        self.softmax = OurSoftmax()
 
     def forward(self, input_batch):
         seq_len, batch_size = input_batch.size()
@@ -144,10 +144,10 @@ class BiRNNLM(nn.Module):
             hidden = self.rnnRL(w, hRL[seq_len - t - 1]) #
             hRL.append(hidden)
 
-        for i in range(len(hLR)):
+        for i in range(len(hLR-2)):
             j = len(hLR) - 1 - i
-            concatHidden = Variable(torch.cat((hLR[i].data, hRL[j].data), 1))
-            output = self.softmax(self.lay(concatHidden))
+            concatHidden = Variable(torch.cat((hLR[i].data, hRL[j+2].data), 1))
+            output = self.softmax(self.h2o(concatHidden))
             predictions[i,:,:] = output
 
         return predictions
