@@ -58,13 +58,15 @@ class RNN(nn.Module):
 
 # this is the final class that will use RNN
 class RNNLM(nn.Module):
-    def __init__(self, vocab_size):
+    def __init__(self, vocab_size, batch_size):
         super(RNNLM, self).__init__()
 
         embedding_size = 32 # arbitrary dimension
 
         self.hidden_size = 16
         self.vocab_size = vocab_size
+        self.batch_size = batch_size
+        self.initial_hidden = nn.Parameter(torch.rand(self.batch_size, self.hidden_size), requires_grad=True)
         self.embedding = torch.rand(vocab_size, embedding_size)  # random word embedding
         self.rnn = RNN(embedding_size, vocab_size)
 
@@ -73,14 +75,14 @@ class RNNLM(nn.Module):
         seq_len, batch_size = input_batch.size()
         predictions = Variable(torch.zeros(seq_len, batch_size, self.vocab_size))
 
-        # hLR = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)]
-        hidden = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
-        for t in xrange(seq_len):
+        word_ix = input_batch[0, :]
+        w = Variable(self.embedding[word_ix.data, :], requires_grad=True)
+        output, hidden = self.rnn(w, self.initial_hidden)
+        predictions[0,:,:] = output
+        for t in xrange(1, seq_len):
             word_ix = input_batch[t, :]
             w = Variable(self.embedding[word_ix.data, :], requires_grad=True)
-            # output, hidden = self.rnn(w, hLR[t])
             output, hidden = self.rnn(w, hidden)
-            # hLR.append(hidden)
             predictions[t,:,:] = output
 
         return predictions
