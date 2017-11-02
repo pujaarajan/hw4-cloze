@@ -97,6 +97,9 @@ class BiLSTMLM(nn.Module):
         self.W_ho = nn.Parameter(torch.Tensor(self.vocab_size, self.hidden_size * 2))
         self.b_ho = nn.Parameter(torch.Tensor(self.vocab_size))
 
+        self.initial_hidden = nn.Parameter(torch.Tensor(1, self.hidden_size))
+        self.initial_C = nn.Parameter(torch.Tensor(1,self.hidden_size))
+
         self.softmax = nn.LogSoftmax()
         self.init_params()
 
@@ -107,6 +110,10 @@ class BiLSTMLM(nn.Module):
 
         C_prevRL = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
         C_prevLR = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
+
+        C_prevRL = Variable(self.initial_C.data.expand(batch_size, self.hidden_size))
+        C_prevLR = Variable(self.initial_C.data.expand(batch_size, self.hidden_size))
+
         #hLR = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)] 
         #hRL = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)]
         hLR = Variable(torch.rand(seq_len + 2, batch_size, self.hidden_size), requires_grad=False)
