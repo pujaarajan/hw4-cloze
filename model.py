@@ -87,14 +87,31 @@ class BiRNN(nn.Module):
         self.hidden_size = 16
 
         self.W_ih = nn.Parameter(torch.Tensor(self.hidden_size, self.input_size + self.hidden_size))
-        self.b_ih = nn.Parameter(torch.Tensor(self.hidden_size))
+        self.b_ih = nn.Parameter(torch.Tensor(1, self.hidden_size))
 
         self.init_params()
 
     def forward(self, input, hidden):
         combined = Variable(torch.cat((input.data, hidden.data), 1), requires_grad=False) # concatenate
-        hidden = combined.matmul(self.W_ih.t()) + self.b_ih
+        # print('input')
+        # print(input.data)
+        # print('hidden')
+        # print(hidden.data)
+        # print('combined')
+        # print(combined.data)
+        # print('W')
+        # print(self.W_ih.data)
+        # print('b')
+        # print(self.b_ih.data)
+        hidden = combined.matmul(self.W_ih.t())
+        # print('matmul')
+        # print(hidden.data)
+        hidden = hidden + self.b_ih
+        # print('after addition')
+        # print(hidden.data)
         hidden = torch.tanh(hidden)
+        # print('final hidden')
+        # print(hidden.data)
         return hidden
 
     def init_params(self):
