@@ -94,7 +94,9 @@ class BiLSTMLM(nn.Module):
         self.vocab_size = vocab_size
         self.embedding = nn.Parameter(torch.randn(vocab_size, self.embedding_size))  # random word embeddin
         self.lstm = LSTM_Cell(self.embedding_size, self.hidden_size)
-        self.h2o = nn.Linear(self.hidden_size + self.hidden_size, vocab_size)
+        self.W_ho = nn.Parameter(torch.Tensor(self.vocab_size, self.hidden_size * 2))
+        self.b_ho = nn.Parameter(torch.Tensor(self.vocab_size))
+
         self.softmax = nn.LogSoftmax()
         self.init_params()
 
@@ -105,33 +107,35 @@ class BiLSTMLM(nn.Module):
 
         C_prevRL = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
         C_prevLR = Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)
-        hLR = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)] 
-        hRL = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)]
+        #hLR = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)] 
+        #hRL = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)]
+        hLR = Variable(torch.rand(seq_len + 2, batch_size, self.hidden_size), requires_grad=False)
+        hRL = Variable(torch.rand(seq_len + 2, batch_size, self.hidden_size), requires_grad=False)
 
-        for t in xrange(seq_len-1):
+        hLR[0,:,:] = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
+        hRL[seq_len+1,:,:] = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
+
+        for t in xrange(seq_len):
             word_ix = input_batch[t, :]
             w = self.embedding[word_ix.data, :]
             hidden, C_prevLR = self.lstm(w, (hLR[t], C_prevLR))
-            hLR.append(hidden)
+            #hLR.append(hidden)
+            hLR[t+1,:,:] = hidden
 
-        hLR.pop()
-
-        for t in xrange(seq_len - 1, 0, -1):
-            word_ix = input_batch[t, :]
+        for t in xrange(seq_len + 1, 1, -1):
+            word_ix = input_batch[t-2, :]
             w = self.embedding[word_ix.data, :]
-            hidden, C_prevRL = self.lstm(w, (hRL[seq_len - t - 1], C_prevRL)) #
-            hRL.append(hidden)
-
-        hRL.pop()
-        xxx = []
-        for i in hRL:
-            xxx.append(hRL.pop())
-        hRL = xxx
+            hidden, C_prevRL = self.lstm(w, (hRL[t], C_prevRL)) #
+            #hRL.append(hidden)
+            hRL[t-1,:,:] = hidden
         
-        for i in range(len(hRL)):
-            concatHidden = Variable(torch.cat((hLR[i].data, hRL[i].data), 1))
-            output = self.softmax(self.h2o(concatHidden))
+        for i in xrange(seq_len):
+            j = i+2
+            concatHidden = Variable(torch.cat((hLR[i,:,:].data, hRL[j,:,:].data), 1))
+            output = concatHidden.matmul(self.W_ho.t()) + self.b_ho
+            output = self.softmax(output)
             predictions[i,:,:] = output
+
         return predictions     
 
     def init_params(self):
