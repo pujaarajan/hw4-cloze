@@ -3,6 +3,7 @@ from torch import cuda
 from torch.autograd import Variable
 from LSTMmodel import BiLSTMLM
 from model import BiRNNLM
+from model import BiRNNLMwithDropout
 import dill
 import numpy as np
 import utils.tensor
@@ -30,7 +31,7 @@ with open('data/output.txt', 'w') as f_write:
 	      blanks.append(i)
 	  
 	  # compute predicitons using model
-	  result = lstm(Variable(torch.t(torch.Tensor(i_sen).long()))).data
+	  result = lstm(Variable(torch.t(torch.Tensor(i_sen).long())), withDropout = False).data
 	  
 	  # replace blanks by indices of real words
 	  output = [] 
