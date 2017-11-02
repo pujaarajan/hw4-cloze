@@ -127,11 +127,14 @@ class BiRNNLM(nn.Module):
         self.hidden_size = 16
         self.vocab_size = vocab_size
 
+        self.W_ih_lr = nn.Parameter(torch.Tensor(self.embedding_size + self.hidden_size, self.hidden_size))
+        self.b_ih_lr = nn.Parameter(torch.Tensor(1, self.hidden_size))
+        self.W_ih_rl = nn.Parameter(torch.Tensor(self.embedding_size + self.hidden_size, self.hidden_size))
+        self.b_ih_rl = nn.Parameter(torch.Tensor(1, self.hidden_size))
+
         self.embedding = nn.Parameter(torch.randn(self.vocab_size, self.embedding_size))  # random word embedding
-        self.rnnLR = BiRNN(self.embedding_size, self.vocab_size)
-        self.rnnRL = BiRNN(self.embedding_size, self.vocab_size)
-        self.W_ho = nn.Parameter(torch.Tensor(self.vocab_size, self.hidden_size * 2))
-        self.b_ho = nn.Parameter(torch.Tensor(self.vocab_size))
+        self.W_ho = nn.Parameter(torch.Tensor(self.hidden_size * 2, self.vocab_size))
+        self.b_ho = nn.Parameter(torch.Tensor(1, self.vocab_size))
 
         self.softmax = nn.LogSoftmax()
 
@@ -142,33 +145,37 @@ class BiRNNLM(nn.Module):
     def forward(self, input_batch):
         seq_len, batch_size = input_batch.size()
         predictions = Variable(torch.zeros(seq_len, batch_size, self.vocab_size), requires_grad=False)
-        # hLR = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)]
-        # hRL = [Variable(torch.rand(batch_size, self.hidden_size), requires_grad=True)]
-        hLR = Variable(torch.rand(seq_len + 2, batch_size, self.hidden_size), requires_grad=False)
-        hRL = Variable(torch.rand(seq_len + 2, batch_size, self.hidden_size), requires_grad=False)
+        hLR = Variable(torch.rand(seq_len + 1, batch_size, self.hidden_size), requires_grad=False)
+        hRL = Variable(torch.rand(seq_len + 1, batch_size, self.hidden_size), requires_grad=False)
 
-        hLR[0,:,:] = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
-        hRL[seq_len+1,:,:] = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
+        hidden = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
+        hLR[0,:,:] = hidden
 
         for t in xrange(seq_len):
             word_ix = input_batch[t, :]
             w = self.embedding[word_ix.data, :]
-            hidden = self.rnnLR(w, hLR[t]) #
-            # hLR.append(hidden)
+            combined = torch.cat((w, hidden), 1)
+            hidden = combined.matmul(self.W_ih_lr)
+            hidden = hidden + self.b_ih_lr
+            hidden = torch.tanh(hidden)
             hLR[t+1,:,:] = hidden
 
-        for t in xrange(seq_len + 1, 1, -1):
-            word_ix = input_batch[t-2, :]
+        hidden = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
+        hRL[seq_len,:,:] = hidden
+
+        for t in xrange(seq_len, 0, -1):
+            word_ix = input_batch[t-1, :]
             w = self.embedding[word_ix.data, :]
-            hidden = self.rnnRL(w, hRL[t]) #
-            # hRL.append(hidden)
-            # hRL[seq_len - 1 - t + 1,:,:] = hidden
+            combined = torch.cat((w, hidden), 1)
+            hidden = combined.matmul(self.W_ih_rl)
+            hidden = hidden + self.b_ih_rl
+            hidden = torch.tanh(hidden)
             hRL[t-1,:,:] = hidden
 
         for i in xrange(seq_len):
-            j = i + 2
-            concatHidden = Variable(torch.cat((hLR[i,:,:].data, hRL[j,:,:].data), 1))
-            output = concatHidden.matmul(self.W_ho.t()) + self.b_ho
+            j = i + 1
+            concatHidden = torch.cat((hLR[i,:,:], hRL[j,:,:]), 1)
+            output = concatHidden.matmul(self.W_ho) + self.b_ho
             output = self.softmax(output)
             predictions[i,:,:] = output
 
