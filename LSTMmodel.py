@@ -23,7 +23,7 @@ class LSTM_Cell(nn.Module):
         self.W_o = nn.Parameter(torch.Tensor(self.hidden_size, self.input_size + self.hidden_size))
         self.b_o = nn.Parameter(torch.Tensor(self.hidden_size))
 
-        self.W_h2o = nn.Parameter(torch.Tensor(self.output_size, self.input_size + self.hidden_size))
+        self.W_h2o = nn.Parameter(torch.Tensor(self.output_size, self.hidden_size))
         self.b_h2o = nn.Parameter(torch.Tensor(self.output_size))        
 
         self.softmax = torch.nn.LogSoftmax()
@@ -41,7 +41,7 @@ class LSTM_Cell(nn.Module):
         C_t = f_t.matmul(C_previous_t.t()) + i_t.matmul(C_tilde_t.t())
 
         o_t = self.sigmoid(combined.matmul(self.W_o.t()) + self.b_o)
-        h_t = o_t.matmul(torch.tanh(C_t).t())
+        h_t = o_t.matmul(torch.tanh(C_t))
 
         output = self.softmax(h_t.matmul(self.W_h2o.t()) + self.b_h2o)
 
@@ -56,7 +56,7 @@ class LSTMLM(nn.Module):
     def __init__(self, vocab_size):
         super(LSTMLM, self).__init__()
 
-        embedding_size = 32 # arbitrary dimension
+        embedding_size = 24 # arbitrary dimension
 
         self.hidden_size = 16
         self.vocab_size = vocab_size
