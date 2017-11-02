@@ -3,18 +3,7 @@ import torch.nn as nn
 from torch.autograd import Variable
 import math
 import numpy as np
-import torch.nn.functional as functional
-class OurSoftmax(nn.Module):
-  def __init__(self):
-    super(OurSoftmax, self).__init__()
 
-  def forward(self, x):
-    # x = torch.exp(x)
-    # Z = torch.sum(x, 0)
-    # x = torch.div(x, Z)
-    # x = torch.log(x)
-
-    return functional.log_softmax(x)
 
 # create a RNN. this is not the final class
 class RNN(nn.Module):
@@ -72,47 +61,6 @@ class RNNLM(nn.Module):
             output, hidden = self.rnn(w, hidden)
             predictions[t,:,:] = output
         return predictions
-
-    def init_params(self):
-        stdv = 1.0 / math.sqrt(self.hidden_size)
-        for weight in self.parameters():
-            weight.data.uniform_(-stdv, stdv)
-
-# TODO: Your implementation goes here
-class BiRNN(nn.Module):
-    def __init__(self, input_size, output_size):
-        super(BiRNN, self).__init__()
-
-        self.input_size = input_size
-        self.hidden_size = 16
-
-        self.W_ih = nn.Parameter(torch.Tensor(self.hidden_size, self.input_size + self.hidden_size))
-        self.b_ih = nn.Parameter(torch.Tensor(1, self.hidden_size))
-
-        self.init_params()
-
-    def forward(self, input, hidden):
-        combined = Variable(torch.cat((input.data, hidden.data), 1), requires_grad=False) # concatenate
-        # print('input')
-        # print(input.data)
-        # print('hidden')
-        # print(hidden.data)
-        # print('combined')
-        # print(combined.data)
-        # print('W')
-        # print(self.W_ih.data)
-        # print('b')
-        # print(self.b_ih.data)
-        hidden = combined.matmul(self.W_ih.t())
-        # print('matmul')
-        # print(hidden.data)
-        hidden = hidden + self.b_ih
-        # print('after addition')
-        # print(hidden.data)
-        hidden = torch.tanh(hidden)
-        # print('final hidden')
-        # print(hidden.data)
-        return hidden
 
     def init_params(self):
         stdv = 1.0 / math.sqrt(self.hidden_size)
