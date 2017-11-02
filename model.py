@@ -123,8 +123,10 @@ class BiRNN(nn.Module):
 class BiRNNLM(nn.Module):
     def __init__(self, vocab_size):
         super(BiRNNLM, self).__init__()
-        self.embedding_size = 32 # arbitrary dimension
-        self.hidden_size = 16
+        # self.embedding_size = 32 # arbitrary dimension
+        # self.hidden_size = 16
+        self.embedding_size = 150 # arbitrary dimension
+        self.hidden_size = 30
         self.vocab_size = vocab_size
 
         self.W_ih_lr = nn.Parameter(torch.Tensor(self.embedding_size + self.hidden_size, self.hidden_size))
