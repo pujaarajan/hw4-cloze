@@ -114,15 +114,22 @@ class BiLSTMLM(nn.Module):
             hidden, C_prevLR = self.lstm(w, (hLR[t], C_prevLR))
             hLR.append(hidden)
 
+        hLR.pop()
+
         for t in xrange(seq_len - 1, 0, -1):
             word_ix = input_batch[t, :]
             w = self.embedding[word_ix.data, :]
             hidden, C_prevRL = self.lstm(w, (hRL[seq_len - t - 1], C_prevRL)) #
             hRL.append(hidden)
 
-        for i in range(len(hLR)):
-            j = len(hLR) - 1 - i
-            concatHidden = Variable(torch.cat((hLR[i].data, hRL[j].data), 1))
+        hRL.pop()
+        xxx = []
+        for i in hRL:
+            xxx.append(hRL.pop())
+        hRL = xxx
+        
+        for i in range(len(hRL)):
+            concatHidden = Variable(torch.cat((hLR[i].data, hRL[i].data), 1))
             output = self.softmax(self.h2o(concatHidden))
             predictions[i,:,:] = output
         return predictions     
