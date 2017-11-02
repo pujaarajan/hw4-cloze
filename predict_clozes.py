@@ -2,13 +2,14 @@ import torch
 from torch import cuda
 from torch.autograd import Variable
 from LSTMmodel import BiLSTMLM
+from LSTMmodel import LSTMLM
 from model import BiRNNLM
 import dill
 import numpy as np
 import utils.tensor
 import utils.rand
 
-lstm = torch.load(open('LSTMmodel.py.nll_3.24.epoch_2', 'rb'), pickle_module=dill)
+lstm = torch.load(open('model.py.nll_4.44.epoch_0', 'rb'), pickle_module=dill)
 
 sentences = []
 with open('data/test.en.txt.cloze') as f_read:
@@ -21,7 +22,7 @@ _, _, _, vocab = torch.load(open("data/hw4_data.bin", 'rb'), pickle_module=dill)
 with open('data/output.txt', 'w') as f_write:
 	for sentence in sentences:
 	  sentence = "<s> " + sentence + " </s>"
-	  vector = [[int(vocab.stoi[word]) for word in sentence.split(" ")]]
+	  i_sen = [[int(vocab.stoi[word]) for word in sentence.split(" ")]]
 
 	  # find where blanks are
 	  blanks = []
@@ -30,7 +31,7 @@ with open('data/output.txt', 'w') as f_write:
 	      blanks.append(i)
 	  
 	  # compute predicitons using model
-	  result = lstm(Variable(torch.t(torch.Tensor(vector).long()))).data
+	  result = lstm(Variable(torch.t(torch.Tensor(i_sen).long()))).data
 	  
 	  # replace blanks by indices of real words
 	  output = [] 
