@@ -41,7 +41,7 @@ with open('data/output.txt', 'w') as f_write:
 	  # build the string by querying vocabulary
 	  s = ""
 	  for ix in output:
-	    s += vocab.itos[np.argmax(ix.numpy())] + " "
+	    s += vocab.itos[np.argmax(ix.cpu().numpy())] + " "
 	  print s.encode('utf-8')
 	  s += '\n'
 	  f_write.write(s.encode('utf-8'))
