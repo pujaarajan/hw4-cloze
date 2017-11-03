@@ -51,6 +51,7 @@ class BiRNNLMwithDropout(nn.Module):
             if withDropout:
                 mask = Variable(torch.Tensor(np.random.binomial(np.ones(hidden.size(), dtype='int64'), 1-self.dropout_percent)).cuda())
                 hidden = torch.mul(hidden, mask)
+                hidden = torch.mul(hidden, 1.0 / (1 - self.dropout_percent))
             hLR[t+1,:,:] = hidden
 
         hidden = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size).cuda())
@@ -66,6 +67,7 @@ class BiRNNLMwithDropout(nn.Module):
             if withDropout:
                 mask = Variable(torch.Tensor(np.random.binomial(np.ones(hidden.size(), dtype='int64'), 1-self.dropout_percent)).cuda())
                 hidden = torch.mul(hidden, mask)
+                hidden = torch.mul(hidden, 1.0 / (1 - self.dropout_percent))
             hRL[t-1,:,:] = hidden
 
         for i in xrange(seq_len):
