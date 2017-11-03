@@ -15,20 +15,20 @@ class BiRNNLMwithDropout(nn.Module):
         # self.hidden_size = 30
         self.vocab_size = vocab_size
 
-        self.W_ih_lr = nn.Parameter(torch.Tensor(self.embedding_size + self.hidden_size, self.hidden_size))
-        self.b_ih_lr = nn.Parameter(torch.Tensor(1, self.hidden_size))
-        self.W_ih_rl = nn.Parameter(torch.Tensor(self.embedding_size + self.hidden_size, self.hidden_size))
-        self.b_ih_rl = nn.Parameter(torch.Tensor(1, self.hidden_size))
+        self.W_ih_lr = nn.Parameter(torch.Tensor(self.embedding_size + self.hidden_size, self.hidden_size)).cuda()
+        self.b_ih_lr = nn.Parameter(torch.Tensor(1, self.hidden_size)).cuda()
+        self.W_ih_rl = nn.Parameter(torch.Tensor(self.embedding_size + self.hidden_size, self.hidden_size)).cuda()
+        self.b_ih_rl = nn.Parameter(torch.Tensor(1, self.hidden_size)).cuda()
 
-        self.embedding = nn.Parameter(torch.randn(self.vocab_size, self.embedding_size))  # random word embedding
-        self.W_ho = nn.Parameter(torch.Tensor(self.hidden_size * 2, self.vocab_size))
-        self.b_ho = nn.Parameter(torch.Tensor(1, self.vocab_size))
+        self.embedding = nn.Parameter(torch.randn(self.vocab_size, self.embedding_size)).cuda()  # random word embedding
+        self.W_ho = nn.Parameter(torch.Tensor(self.hidden_size * 2, self.vocab_size)).cuda()
+        self.b_ho = nn.Parameter(torch.Tensor(1, self.vocab_size)).cuda()
 
         self.dropout_percent = 0.2
 
         self.softmax = nn.LogSoftmax()
 
-        self.initial_hidden = nn.Parameter(torch.Tensor(1, self.hidden_size))
+        self.initial_hidden = nn.Parameter(torch.Tensor(1, self.hidden_size)).cuda()
 
         self.init_params()
 
