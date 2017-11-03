@@ -3,13 +3,13 @@ from torch import cuda
 from torch.autograd import Variable
 from LSTMmodel import BiLSTMLM
 from model import BiRNNLM
-from model import BiRNNLMwithDropout
+from cuda_model import BiRNNLMwithDropout
 import dill
 import numpy as np
 import utils.tensor
 import utils.rand
 
-lstm = torch.load(open('model.py.nll_3.92.epoch_9', 'rb'), pickle_module=dill)
+lstm = torch.load(open('model.py.nll_3.92.epoch_9', 'rb'), pickle_module=dill).cuda()
 
 sentences = []
 with open('data/test.en.txt.cloze') as f_read:
