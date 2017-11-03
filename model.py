@@ -154,7 +154,7 @@ class BiRNNLMwithDropout(nn.Module):
         self.W_ho = nn.Parameter(torch.Tensor(self.hidden_size * 2, self.vocab_size))
         self.b_ho = nn.Parameter(torch.Tensor(1, self.vocab_size))
 
-        self.dropout_percent = 0.2
+        self.dropout_percent = 0.4
 
         self.softmax = nn.LogSoftmax()
 
@@ -181,6 +181,7 @@ class BiRNNLMwithDropout(nn.Module):
             if withDropout:
                 mask = Variable(torch.Tensor(np.random.binomial(np.ones(hidden.size(), dtype='int64'), 1-self.dropout_percent)))
                 hidden = torch.mul(hidden, mask)
+                hidden = torch.mul(hidden, 1.0 / (1 - self.dropout_percent))
             hLR[t+1,:,:] = hidden
 
         hidden = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
@@ -196,6 +197,7 @@ class BiRNNLMwithDropout(nn.Module):
             if withDropout:
                 mask = Variable(torch.Tensor(np.random.binomial(np.ones(hidden.size(), dtype='int64'), 1-self.dropout_percent)))
                 hidden = torch.mul(hidden, mask)
+                hidden = torch.mul(hidden, 1.0 / (1 - self.dropout_percent))
             hRL[t-1,:,:] = hidden
 
         for i in xrange(seq_len):
