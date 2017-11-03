@@ -154,7 +154,7 @@ class BiRNNLMwithDropout(nn.Module):
         self.W_ho = nn.Parameter(torch.Tensor(self.hidden_size * 2, self.vocab_size))
         self.b_ho = nn.Parameter(torch.Tensor(1, self.vocab_size))
 
-        self.dropout_percent = 0.2
+        self.dropout_percent = 0.1
 
         self.softmax = nn.LogSoftmax()
 
