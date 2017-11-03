@@ -26,7 +26,7 @@ class BiRNNLMwithDropout(nn.Module):
 
         self.dropout_percent = 0.2
 
-        self.softmax = nn.LogSoftmax()
+        self.softmax = nn.LogSoftmax().cuda()
 
         self.initial_hidden = nn.Parameter(torch.Tensor(1, self.hidden_size).cuda())
 
