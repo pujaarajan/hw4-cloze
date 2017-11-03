@@ -9,7 +9,7 @@ import numpy as np
 import utils.tensor
 import utils.rand
 
-lstm = torch.load(open('model.py.nll_4.18.epoch_1', 'rb'), pickle_module=dill)
+lstm = torch.load(open('model.py.nll_3.92.epoch_9', 'rb'), pickle_module=dill)
 
 sentences = []
 with open('data/test.en.txt.cloze') as f_read:
