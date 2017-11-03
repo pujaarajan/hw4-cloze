@@ -3,7 +3,7 @@ from torch import cuda
 from torch.autograd import Variable
 from LSTMmodel import BiLSTMLM
 from model import BiRNNLM
-from model import BiRNNLMwithDropout
+from cuda_model import BiRNNLMwithDropout
 import dill
 import numpy as np
 import utils.tensor
