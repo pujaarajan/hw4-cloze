@@ -59,7 +59,7 @@ class BiRNNLMwithDropout(nn.Module):
 
         for t in xrange(seq_len, 0, -1):
             word_ix = input_batch[t-1, :]
-            w = self.embedding[word_ix.data, :]
+            w = self.embedding[word_ix.data.cuda(), :]
             combined = torch.cat((w, hidden), 1)
             hidden = combined.matmul(self.W_ih_rl)
             hidden = hidden + self.b_ih_rl
