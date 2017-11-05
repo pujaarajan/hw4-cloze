@@ -23,7 +23,7 @@ class RNN(nn.Module):
         self.init_params()
 
     def forward(self, input, hidden):
-        combined = Variable(torch.cat((input.data, hidden.data), 1), requires_grad=False) # concatenate
+        combined = torch.cat((input, hidden), 1) # concatenate
         hidden = combined.matmul(self.W_ih.t()) + self.b_ih
         hidden = torch.tanh(hidden)
         output = hidden.matmul(self.W_ho.t()) + self.b_ho
@@ -46,6 +46,8 @@ class RNNLM(nn.Module):
         self.vocab_size = vocab_size
         self.embedding = nn.Parameter(torch.randn(vocab_size, embedding_size))  # random word embedding
         self.rnn = RNN(embedding_size, vocab_size)
+        
+        self.initial_hidden = nn.Parameter(torch.Tensor(1, self.hidden_size))
 
         self.init_params()
 
@@ -54,7 +56,8 @@ class RNNLM(nn.Module):
         seq_len, batch_size = input_batch.size()
         predictions = Variable(torch.zeros(seq_len, batch_size, self.vocab_size), requires_grad=False)
 
-        hidden = Variable(torch.randn(batch_size, self.hidden_size), requires_grad=False)
+        hidden = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
+        
         for t in xrange(seq_len):
             word_ix = input_batch[t, :]
             w = self.embedding[word_ix.data, :]
