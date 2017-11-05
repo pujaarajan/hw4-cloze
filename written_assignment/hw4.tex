@@ -8,6 +8,7 @@
 \usepackage{natbib}
 \usepackage{graphicx}
 \usepackage{bbm}
+\usepackage{hyperref}
 \usepackage{amsmath}
 \usepackage[linesnumbered,ruled,vlined]{algorithm2e}
 \usepackage[margin=1in]{geometry}
@@ -16,14 +17,27 @@
 
 \maketitle
 
+Code can be found in the following \href{https://github.com/tferrer1/mt-clauze}{Github repository}
 
 \section{Part 1}
 
 We implemented all of Shuoyang's hints. Our dev negative log probability after epoch 0 was 5.44, which passes our sanity check. Our converged dev negative log probability was 5.10 after epoch 3.
 
+Usage instructions:
+To obtain the models, run the following command:
+\begin{verbatim}
+python train.py --data_file hw4_data --optimizer Adam -lr 1e-2 --batch_size 48 --model_file model.py
+\end{verbatim}
+
 \section{Part 2}
 
 We implemented all of Shuoyang's hints. Our dev negative log probability after epoch 0 was 4.75, which passes our sanity check. Our converged dev negative log probability was 4.19 after epoch 6.
+
+Usage instructions:
+To obtain the models, run the following command:
+\begin{verbatim}
+python train_bi.py --data_file hw4_data --optimizer Adam -lr 1e-2 --batch_size 48 --model_file model.py
+\end{verbatim}
 
 \section{Part 3}
 
@@ -35,6 +49,16 @@ Dropout is used during training only, and not during testing/runtime. In order t
 
 We experimented a little with the hyperparameters and found that we got the best results using an embedding size of 50, hidden size of 25, and dropout rate of 0.2. Our converged dev negative log probability was 3.97 after epoch 9. Our final cloze score on the leaderboard using this model was 0.298. 
 
+Usage instructions:
+To obtain the BiRNN with Dropout model, run the following command:
+\begin{verbatim}
+python train_dropout.py --data_file hw4_data --optimizer Adam -lr 1e-2 --batch_size 48 --model_file model.py
+\end{verbatim}
+To predict the clozes, modify the script to include the name of the model you want to use, and run the following command:
+\begin{verbatim}
+python predict_clozes.py
+\end{verbatim}
+
 \section{Part 4}
 
 Running on GPU provided a very significant speedup compared to CPU. We measured runtimes on our improvement model (BiRNN with dropout). We used the default given embedding and batch sizes to begin with. This gave us a runtime of 10 minutes and 34 seconds on CPU, and only 32 seconds on GPU!
@@ -43,4 +67,12 @@ Using a batch size of 100 sped up computation even more: we got a speed of 6 min
 
 It is clear to us that GPUs are extremely powerful, and that the speedup compared to CPUs is very significant.
 
-\end{document}
+Usage instructions:
+On a system that has a GPU, run the following command:
+\begin{verbatim}
+python train_cuda_dropout.py --data_file hw4_data --optimizer Adam -lr 1e-2 --batch_size 48 --model_file cuda_model.py
+\end{verbatim}
+To predict the clozes, simply modify the script to include the name of the model you want to use, and run the following command:
+\begin{verbatim}
+python predict_clozes.py
+\end{verbatim}
