@@ -14,6 +14,9 @@
 
 \begin{document}
 
+\maketitle
+
+
 \section{Part 1}
 
 We implemented all of Shuoyang's hints. Our dev negative log probability after epoch 0 was ______, which passes our sanity check. Our converged dev negative log probability was ________.
@@ -22,8 +25,14 @@ We implemented all of Shuoyang's hints. Our dev negative log probability after e
 
 We implemented all of Shuoyang's hints. Our dev negative log probability after epoch 0 was ______, which passes our sanity check. Our converged dev negative log probability was ________.
 
-\maketitle
+\section{Part 3}
 
+We improved BiRNN by implementing dropout. We won't explain dropout in too much theoretical detail because we provide links that have great walkthroughs (and the concept is not very complicated). Below is an overview that can be used to easily reproduce our scores with dropout:
 
+The main concept of dropout is to prevent overfitting by turning nodes off randomly during forward-propogation (but not during backpropogation). We basically want to save computational and memory resources, and turning nodes off randomly does this by helping prevent nodes from converging to the same local minima. This makes the computations less redundant.
+
+Dropout is used during training only, and not during testing/runtime. In order to implement dropout, we simply have to randomly turn off nodes. We do this by going layer-by-layer and applying a binomial mask to the layer. The binomial mask basically "selects" which nodes we want to use and which nodes we want to turn off in this particular forward pass. After turning off some nodes, we simply scale the layer according to how many nodes were turned off (in order to maintain the amount of information flowing through the layer). Some in-depth code can be found here: http://iamtrask.github.io/2015/07/28/dropout/
+
+We experimented a little with the hyperparameters and found that we got the best results using an embedding size of 50, hidden size of 25, and dropout rate of 0.2. Our dev negative log probability after epoch 0 was _______. Our converged dev negative log probability was _______. Our final cloze score on the leaderboard using this model was 0.298. 
 
 \end{document}
