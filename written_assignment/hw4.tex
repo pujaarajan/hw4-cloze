@@ -35,4 +35,12 @@ Dropout is used during training only, and not during testing/runtime. In order t
 
 We experimented a little with the hyperparameters and found that we got the best results using an embedding size of 50, hidden size of 25, and dropout rate of 0.2. Our dev negative log probability after epoch 0 was _______. Our converged dev negative log probability was _______. Our final cloze score on the leaderboard using this model was 0.298. 
 
+\section{Part 4}
+
+Running on GPU provided a very significant speedup compared to CPU. We measured runtimes on our improvement model (BiRNN with dropout). We used the default given embedding and batch sizes to begin with. This gave us a runtime of 10 minutes and 34 seconds on CPU, and only 32 seconds on GPU!
+
+Using a batch size of 100 sped up computation even more: we got a speed of 6 minutes and 8 seconds on CPU, and only 23 seconds on GPU!
+
+It is clear to us that GPUs are extremely powerful, and that the speedup compared to CPUs is very significant.
+
 \end{document}
