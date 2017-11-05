@@ -23,7 +23,7 @@ We implemented all of Shuoyang's hints. Our dev negative log probability after e
 
 \section{Part 2}
 
-We implemented all of Shuoyang's hints. Our dev negative log probability after epoch 0 was 4.75, which passes our sanity check. Our converged dev negative log probability was 4.19.
+We implemented all of Shuoyang's hints. Our dev negative log probability after epoch 0 was 4.75, which passes our sanity check. Our converged dev negative log probability was 4.19 after epoch 6.
 
 \section{Part 3}
 
@@ -33,7 +33,7 @@ The main concept of dropout is to prevent overfitting by turning nodes off rando
 
 Dropout is used during training only, and not during testing/runtime. In order to implement dropout, we simply have to randomly turn off nodes. We do this by going layer-by-layer and applying a binomial mask to the layer. The binomial mask basically "selects" which nodes we want to use and which nodes we want to turn off in this particular forward pass. After turning off some nodes, we simply scale the layer according to how many nodes were turned off (in order to maintain the amount of information flowing through the layer). Some in-depth code can be found here: http://iamtrask.github.io/2015/07/28/dropout/
 
-We experimented a little with the hyperparameters and found that we got the best results using an embedding size of 50, hidden size of 25, and dropout rate of 0.2. Our converged dev negative log probability was 3.97. Our final cloze score on the leaderboard using this model was 0.298. 
+We experimented a little with the hyperparameters and found that we got the best results using an embedding size of 50, hidden size of 25, and dropout rate of 0.2. Our converged dev negative log probability was 3.97 after epoch 9. Our final cloze score on the leaderboard using this model was 0.298. 
 
 \section{Part 4}
 
