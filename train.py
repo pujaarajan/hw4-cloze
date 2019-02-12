@@ -66,7 +66,6 @@ def main(options):
   batched_train_out, batched_train_out_mask, _ = utils.tensor.advanced_batchize(train_out, options.batch_size, vocab.stoi["<pad>"])
   batched_dev_in, batched_dev_in_mask, _ = utils.tensor.advanced_batchize(dev_in, options.batch_size, vocab.stoi["<pad>"])
   batched_dev_out, batched_dev_out_mask, _ = utils.tensor.advanced_batchize(dev_out, options.batch_size, vocab.stoi["<pad>"])
-
   vocab_size = len(vocab)
 
   rnnlm = RNNLM(vocab_size)
@@ -78,6 +77,7 @@ def main(options):
   criterion = torch.nn.NLLLoss()
   optimizer = eval("torch.optim." + options.optimizer)(rnnlm.parameters(), options.learning_rate)
 
+  print("ABOUT TO START MAIN TRAINING LOOP")
   # main training loop
   last_dev_avg_loss = float("inf")
   for epoch_i in range(options.epochs):
@@ -103,10 +103,14 @@ def main(options):
       sys_out_batch = sys_out_batch.masked_select(train_in_mask).view(-1, vocab_size)
       train_out_batch = train_out_batch.masked_select(train_out_mask)
       loss = criterion(sys_out_batch, train_out_batch)
-      logging.debug("loss at batch {0}: {1}".format(i, loss.data[0]))
+
+
+      logging.debug(f"loss at batch {i}: {loss.item()}")
       optimizer.zero_grad()
       loss.backward()
       optimizer.step()
+
+    print("ABOUT TO START VALIDATION LOOP")
 
     # validation -- this is a crude esitmation because there might be some paddings at the end
     dev_loss = 0.0
@@ -132,13 +136,17 @@ def main(options):
       loss = criterion(sys_out_batch, dev_out_batch)
       dev_loss += loss
     dev_avg_loss = dev_loss / len(batched_dev_in)
-    logging.info("Average loss value per instance is {0} at the end of epoch {1}".format(dev_avg_loss.data[0], epoch_i))
+    logging.info("Average loss value per instance is {0} at the end of epoch {1}".format(dev_avg_loss.item(), epoch_i))
 
-    if (last_dev_avg_loss - dev_avg_loss).data[0] < options.estop:
+    print(" THIS IS AFTER VALIDATION LOOP")
+
+    if (last_dev_avg_loss - dev_avg_loss).item() < options.estop:
       logging.info("Early stopping triggered with threshold {0} (previous dev loss: {1}, current: {2})".format(epoch_i, last_dev_avg_loss.data[0], dev_avg_loss.data[0]))
       break
-    torch.save(rnnlm, open(options.model_file + ".nll_{0:.2f}.epoch_{1}".format(dev_avg_loss.data[0], epoch_i), 'wb'), pickle_module=dill)
+    torch.save(rnnlm, open(options.model_file + ".nll_{0:.2f}.epoch_{1}".format(dev_avg_loss.item(), epoch_i), 'wb'), pickle_module=dill)
+    torch.save(rnnlm, open(options.model_file + ".nll_{0:.2f}.epoch_{1}".format(dev_avg_loss.item(), epoch_i), 'wb'), pickle_module=dill)
     last_dev_avg_loss = dev_avg_loss
+  print("DONE RUNNING MAIN")
 
 
 if __name__ == "__main__":

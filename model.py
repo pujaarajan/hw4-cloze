@@ -18,7 +18,7 @@ class RNN(nn.Module):
         self.b_ih = nn.Parameter(torch.Tensor(self.hidden_size))
         self.W_ho = nn.Parameter(torch.Tensor(self.output_size, self.hidden_size))
         self.b_ho = nn.Parameter(torch.Tensor(self.output_size))
-        self.softmax = torch.nn.LogSoftmax()
+        self.softmax = torch.nn.LogSoftmax(dim=1)
 
         self.init_params()
 
@@ -58,7 +58,7 @@ class RNNLM(nn.Module):
 
         hidden = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
         
-        for t in xrange(seq_len):
+        for t in range(seq_len):
             word_ix = input_batch[t, :]
             w = self.embedding[word_ix.data, :]
             output, hidden = self.rnn(w, hidden)
@@ -87,7 +87,7 @@ class BiRNNLM(nn.Module):
         self.W_ho = nn.Parameter(torch.Tensor(self.hidden_size * 2, self.vocab_size))
         self.b_ho = nn.Parameter(torch.Tensor(1, self.vocab_size))
 
-        self.softmax = nn.LogSoftmax()
+        self.softmax = nn.LogSoftmax(dim=1)
 
         self.initial_hidden = nn.Parameter(torch.Tensor(1, self.hidden_size))
 
@@ -102,7 +102,7 @@ class BiRNNLM(nn.Module):
         hidden = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
         hLR[0,:,:] = hidden
 
-        for t in xrange(seq_len):
+        for t in range(seq_len):
             word_ix = input_batch[t, :]
             w = self.embedding[word_ix.data, :]
             combined = torch.cat((w, hidden), 1)
@@ -114,7 +114,7 @@ class BiRNNLM(nn.Module):
         hidden = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
         hRL[seq_len,:,:] = hidden
 
-        for t in xrange(seq_len, 0, -1):
+        for t in range(seq_len, 0, -1):
             word_ix = input_batch[t-1, :]
             w = self.embedding[word_ix.data, :]
             combined = torch.cat((w, hidden), 1)
@@ -123,7 +123,7 @@ class BiRNNLM(nn.Module):
             hidden = torch.tanh(hidden)
             hRL[t-1,:,:] = hidden
 
-        for i in xrange(seq_len):
+        for i in range(seq_len):
             j = i + 1
             concatHidden = torch.cat((hLR[i,:,:], hRL[j,:,:]), 1)
             output = concatHidden.matmul(self.W_ho) + self.b_ho
@@ -157,7 +157,7 @@ class BiRNNLMwithDropout(nn.Module):
 
         self.dropout_percent = 0.1
 
-        self.softmax = nn.LogSoftmax()
+        self.softmax = nn.LogSoftmax(dim=1)
 
         self.initial_hidden = nn.Parameter(torch.Tensor(1, self.hidden_size))
 
@@ -172,7 +172,7 @@ class BiRNNLMwithDropout(nn.Module):
         hidden = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
         hLR[0,:,:] = hidden
 
-        for t in xrange(seq_len):
+        for t in range(seq_len):
             word_ix = input_batch[t, :]
             w = self.embedding[word_ix.data, :]
             combined = torch.cat((w, hidden), 1)
@@ -188,7 +188,7 @@ class BiRNNLMwithDropout(nn.Module):
         hidden = Variable(self.initial_hidden.data.expand(batch_size, self.hidden_size))
         hRL[seq_len,:,:] = hidden
 
-        for t in xrange(seq_len, 0, -1):
+        for t in range(seq_len, 0, -1):
             word_ix = input_batch[t-1, :]
             w = self.embedding[word_ix.data, :]
             combined = torch.cat((w, hidden), 1)
@@ -201,7 +201,7 @@ class BiRNNLMwithDropout(nn.Module):
                 hidden = torch.mul(hidden, 1.0 / (1 - self.dropout_percent))
             hRL[t-1,:,:] = hidden
 
-        for i in xrange(seq_len):
+        for i in range(seq_len):
             j = i + 1
             concatHidden = torch.cat((hLR[i,:,:], hRL[j,:,:]), 1)
             output = concatHidden.matmul(self.W_ho) + self.b_ho
